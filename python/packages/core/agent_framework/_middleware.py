@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, TypeAlias, cast, overlo
 
 from ._clients import SupportsChatGetResponse
 from ._feature_stage import ExperimentalFeature, experimental
+from ._nvtx import range_push as nvtx_range
 from ._types import (
     AgentResponse,
     AgentResponseUpdate,
@@ -913,7 +914,9 @@ class AgentMiddlewarePipeline(BaseMiddlewarePipeline):
 
             async def current_handler() -> None:
                 # MiddlewareTermination bubbles up to execute() to skip post-processing
-                await self._middleware[index].process(context, create_next_handler(index + 1))
+                middleware_name = self._middleware[index].__class__.__name__
+                with nvtx_range(f"maf.middleware.agent:{middleware_name}"):
+                    await self._middleware[index].process(context, create_next_handler(index + 1))
 
             return current_handler
 
@@ -993,7 +996,9 @@ class FunctionMiddlewarePipeline(BaseMiddlewarePipeline):
 
             async def current_handler() -> None:
                 # MiddlewareTermination bubbles up to execute() to skip post-processing
-                await self._middleware[index].process(context, create_next_handler(index + 1))
+                middleware_name = self._middleware[index].__class__.__name__
+                with nvtx_range(f"maf.middleware.function:{middleware_name}"):
+                    await self._middleware[index].process(context, create_next_handler(index + 1))
 
             return current_handler
 
@@ -1078,7 +1083,9 @@ class ChatMiddlewarePipeline(BaseMiddlewarePipeline):
 
             async def current_handler() -> None:
                 # MiddlewareTermination bubbles up to execute() to skip post-processing
-                await self._middleware[index].process(context, create_next_handler(index + 1))
+                middleware_name = self._middleware[index].__class__.__name__
+                with nvtx_range(f"maf.middleware.chat:{middleware_name}"):
+                    await self._middleware[index].process(context, create_next_handler(index + 1))
 
             return current_handler
 

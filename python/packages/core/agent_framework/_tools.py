@@ -38,6 +38,7 @@ from typing import (
 from opentelemetry.metrics import Histogram, NoOpHistogram
 from pydantic import BaseModel, Field, ValidationError, create_model
 
+from ._nvtx import range_push as nvtx_range
 from ._serialization import SerializationMixin
 from .exceptions import ToolException, UserInputRequiredException
 from .observability import (
@@ -544,13 +545,14 @@ class FunctionTool(SerializationMixin):
 
     async def _invoke_function(self, call_kwargs: Mapping[str, Any]) -> Any:
         """Run sync tools off the event loop during async invocation."""
-        func = self.func.func if isinstance(self.func, FunctionTool) else self.func
-        if inspect.iscoroutinefunction(func) or getattr(self, "_invoke_sync_on_event_loop", False):
-            res = self.__call__(**call_kwargs)
-            return await res if inspect.isawaitable(res) else res
+        with nvtx_range(f"maf.tool.invoke:{self.name}"):
+            func = self.func.func if isinstance(self.func, FunctionTool) else self.func
+            if inspect.iscoroutinefunction(func) or getattr(self, "_invoke_sync_on_event_loop", False):
+                res = self.__call__(**call_kwargs)
+                return await res if inspect.isawaitable(res) else res
 
-        res = await asyncio.to_thread(self.__call__, **call_kwargs)
-        return await res if inspect.isawaitable(res) else res
+            res = await asyncio.to_thread(self.__call__, **call_kwargs)
+            return await res if inspect.isawaitable(res) else res
 
     @overload
     async def invoke(
@@ -2569,18 +2571,19 @@ class FunctionInvocationLayer(Generic[OptionsCoT]):
                 max_iterations = self.function_invocation_configuration.get("max_iterations", DEFAULT_MAX_ITERATIONS)
                 attempt_start = int(budget_state.get("attempt_count", 0) or 0)
                 for attempt_idx in range(attempt_start, max_iterations if loop_enabled else 0):
-                    budget_state["attempt_count"] = attempt_idx + 1
-                    approval_result = await _process_function_requests(
-                        response=None,
-                        prepped_messages=prepped_messages,
-                        tool_options=mutable_options,  # type: ignore[arg-type]
-                        attempt_idx=attempt_idx,
-                        fcc_messages=None,
-                        errors_in_a_row=errors_in_a_row,
-                        max_errors=max_errors,
-                        execute_function_calls=execute_function_calls,
-                        invocation_session=invocation_session,
-                    )
+                    with nvtx_range(f"maf.function_loop.pre_tools:{attempt_idx + 1}"):
+                        budget_state["attempt_count"] = attempt_idx + 1
+                        approval_result = await _process_function_requests(
+                            response=None,
+                            prepped_messages=prepped_messages,
+                            tool_options=mutable_options,  # type: ignore[arg-type]
+                            attempt_idx=attempt_idx,
+                            fcc_messages=None,
+                            errors_in_a_row=errors_in_a_row,
+                            max_errors=max_errors,
+                            execute_function_calls=execute_function_calls,
+                            invocation_session=invocation_session,
+                        )
                     if approval_result.get("action") == "stop":
                         response = ChatResponse(messages=prepped_messages)
                         break
@@ -2595,17 +2598,18 @@ class FunctionInvocationLayer(Generic[OptionsCoT]):
                         )
                         mutable_options["tool_choice"] = "none"
 
-                    response = cast(
-                        ChatResponse[Any],
-                        await super_get_response(
-                            messages=prepped_messages,
-                            stream=False,
-                            options=mutable_options,
-                            compaction_strategy=compaction_strategy,
-                            tokenizer=tokenizer,
-                            client_kwargs=filtered_kwargs,
-                        ),
-                    )
+                    with nvtx_range(f"maf.function_loop.chat:{attempt_idx + 1}"):
+                        response = cast(
+                            ChatResponse[Any],
+                            await super_get_response(
+                                messages=prepped_messages,
+                                stream=False,
+                                options=mutable_options,
+                                compaction_strategy=compaction_strategy,
+                                tokenizer=tokenizer,
+                                client_kwargs=filtered_kwargs,
+                            ),
+                        )
                     aggregated_usage = add_usage_details(aggregated_usage, response.usage_details)
                     _update_continuation_state(
                         filtered_kwargs,
@@ -2617,17 +2621,18 @@ class FunctionInvocationLayer(Generic[OptionsCoT]):
                     if response.conversation_id is not None:
                         prepped_messages = []
 
-                    result = await _process_function_requests(
-                        response=response,
-                        prepped_messages=None,
-                        tool_options=mutable_options,  # type: ignore[arg-type]
-                        attempt_idx=attempt_idx,
-                        fcc_messages=fcc_messages,
-                        errors_in_a_row=errors_in_a_row,
-                        max_errors=max_errors,
-                        execute_function_calls=execute_function_calls,
-                        invocation_session=invocation_session,
-                    )
+                    with nvtx_range(f"maf.function_loop.process_tools:{attempt_idx + 1}"):
+                        result = await _process_function_requests(
+                            response=response,
+                            prepped_messages=None,
+                            tool_options=mutable_options,  # type: ignore[arg-type]
+                            attempt_idx=attempt_idx,
+                            fcc_messages=fcc_messages,
+                            errors_in_a_row=errors_in_a_row,
+                            max_errors=max_errors,
+                            execute_function_calls=execute_function_calls,
+                            invocation_session=invocation_session,
+                        )
                     if result.get("action") == "return":
                         response.usage_details = aggregated_usage
                         return _clear_internal_conversation_id(response)
@@ -2719,18 +2724,19 @@ class FunctionInvocationLayer(Generic[OptionsCoT]):
             max_iterations = self.function_invocation_configuration.get("max_iterations", DEFAULT_MAX_ITERATIONS)
             attempt_start = int(budget_state.get("attempt_count", 0) or 0)
             for attempt_idx in range(attempt_start, max_iterations if loop_enabled else 0):
-                budget_state["attempt_count"] = attempt_idx + 1
-                approval_result = await _process_function_requests(
-                    response=None,
-                    prepped_messages=prepped_messages,
-                    tool_options=mutable_options,  # type: ignore[arg-type]
-                    attempt_idx=attempt_idx,
-                    fcc_messages=None,
-                    errors_in_a_row=errors_in_a_row,
-                    max_errors=max_errors,
-                    execute_function_calls=execute_function_calls,
-                    invocation_session=invocation_session,
-                )
+                with nvtx_range(f"maf.function_loop.pre_tools_streaming:{attempt_idx + 1}"):
+                    budget_state["attempt_count"] = attempt_idx + 1
+                    approval_result = await _process_function_requests(
+                        response=None,
+                        prepped_messages=prepped_messages,
+                        tool_options=mutable_options,  # type: ignore[arg-type]
+                        attempt_idx=attempt_idx,
+                        fcc_messages=None,
+                        errors_in_a_row=errors_in_a_row,
+                        max_errors=max_errors,
+                        execute_function_calls=execute_function_calls,
+                        invocation_session=invocation_session,
+                    )
                 errors_in_a_row = approval_result.get("errors_in_a_row", errors_in_a_row)
                 total_function_calls += approval_result.get("function_call_count", 0)
                 budget_state["total_function_calls"] = total_function_calls
@@ -2755,6 +2761,8 @@ class FunctionInvocationLayer(Generic[OptionsCoT]):
                         tokenizer=tokenizer,
                         client_kwargs=filtered_kwargs,
                     ),
+                ).with_pull_context_manager(
+                    lambda attempt=attempt_idx + 1: nvtx_range(f"maf.function_loop.chat_streaming.pull:{attempt}")
                 )
                 await inner_stream
                 # Collect result hooks from the inner stream to run later
@@ -2766,7 +2774,8 @@ class FunctionInvocationLayer(Generic[OptionsCoT]):
 
                 # Get the finalized response from the inner stream
                 # This triggers the inner stream's finalizer and result hooks
-                response = await inner_stream.get_final_response()
+                with nvtx_range(f"maf.function_loop.chat_streaming.finalize:{attempt_idx + 1}"):
+                    response = await inner_stream.get_final_response()
                 _update_continuation_state(
                     filtered_kwargs,
                     response,
@@ -2784,17 +2793,18 @@ class FunctionInvocationLayer(Generic[OptionsCoT]):
                 if response.conversation_id is not None:
                     prepped_messages = []
 
-                result = await _process_function_requests(
-                    response=response,
-                    prepped_messages=None,
-                    tool_options=mutable_options,  # type: ignore[arg-type]
-                    attempt_idx=attempt_idx,
-                    fcc_messages=fcc_messages,
-                    errors_in_a_row=errors_in_a_row,
-                    max_errors=max_errors,
-                    execute_function_calls=execute_function_calls,
-                    invocation_session=invocation_session,
-                )
+                with nvtx_range(f"maf.function_loop.process_tools:{attempt_idx + 1}"):
+                    result = await _process_function_requests(
+                        response=response,
+                        prepped_messages=None,
+                        tool_options=mutable_options,  # type: ignore[arg-type]
+                        attempt_idx=attempt_idx,
+                        fcc_messages=fcc_messages,
+                        errors_in_a_row=errors_in_a_row,
+                        max_errors=max_errors,
+                        execute_function_calls=execute_function_calls,
+                        invocation_session=invocation_session,
+                    )
                 errors_in_a_row = result.get("errors_in_a_row", errors_in_a_row)
                 total_function_calls += result.get("function_call_count", 0)
                 budget_state["total_function_calls"] = total_function_calls

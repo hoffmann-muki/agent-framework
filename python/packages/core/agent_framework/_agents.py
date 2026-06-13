@@ -30,6 +30,7 @@ from ._clients import BaseChatClient, SupportsChatGetResponse
 from ._docstrings import apply_layered_docstring
 from ._mcp import LOG_LEVEL_MAPPING, MCPTool
 from ._middleware import AgentMiddlewareLayer, FunctionInvocationContext, MiddlewareTypes, categorize_middleware
+from ._nvtx import range_push as nvtx_range
 from ._serialization import SerializationMixin
 from ._sessions import (
     AgentSession,
@@ -946,30 +947,39 @@ class RawAgent(BaseAgent, Generic[OptionsCoT]):  # type: ignore[misc]
         """
 
         async def _prepare_run_context() -> _RunContext:
-            return await self._prepare_run_context(
-                messages=messages,
-                session=session,
-                tools=tools,
-                options=options,
-                compaction_strategy=compaction_strategy,
-                tokenizer=tokenizer,
-                function_invocation_kwargs=function_invocation_kwargs,
-                client_kwargs=client_kwargs,
-            )
+            with nvtx_range(f"maf.agent.prepare:{self.name or self.id}"):
+                return await self._prepare_run_context(
+                    messages=messages,
+                    session=session,
+                    tools=tools,
+                    options=options,
+                    compaction_strategy=compaction_strategy,
+                    tokenizer=tokenizer,
+                    function_invocation_kwargs=function_invocation_kwargs,
+                    client_kwargs=client_kwargs,
+                )
 
         if not stream:
 
             async def _run_non_streaming() -> AgentResponse[Any]:
-                ctx = await _prepare_run_context()
-                response = await self._call_chat_client(ctx, stream=False)
-                return await self._parse_non_streaming_response(ctx, response)
+                with nvtx_range(f"maf.agent.run:{self.name or self.id}"):
+                    ctx = await _prepare_run_context()
+                    with nvtx_range(f"maf.chat.get_response:{self.name or self.id}"):
+                        response = await self._call_chat_client(ctx, stream=False)
+                    with nvtx_range(f"maf.agent.after_run:{self.name or self.id}"):
+                        return await self._parse_non_streaming_response(ctx, response)
 
             return _run_non_streaming()
 
         async def _run_streaming() -> ResponseStream[AgentResponseUpdate, AgentResponse[Any]]:
-            ctx = await _prepare_run_context()
-            stream_response = self._call_chat_client(ctx, stream=True)
-            return self._parse_streaming_response(ctx, stream_response)
+            with nvtx_range(f"maf.agent.run_streaming:{self.name or self.id}"):
+                ctx = await _prepare_run_context()
+                stream_response = self._call_chat_client(ctx, stream=True).with_pull_context_manager(
+                    lambda: nvtx_range(f"maf.chat.get_streaming_response.pull:{self.name or self.id}")
+                )
+                return self._parse_streaming_response(ctx, stream_response).with_pull_context_manager(
+                    lambda: nvtx_range(f"maf.agent.run_streaming.pull:{self.name or self.id}")
+                )
 
         return cast(
             ResponseStream[AgentResponseUpdate, AgentResponse[Any]],
@@ -1056,6 +1066,10 @@ class RawAgent(BaseAgent, Generic[OptionsCoT]):  # type: ignore[misc]
         """Finalize a streaming chat response into an agent response stream."""
 
         async def _post_hook(response: AgentResponse) -> None:
+            with nvtx_range(f"maf.agent.after_run:{self.name or self.id}"):
+                await _post_hook_core(response)
+
+        async def _post_hook_core(response: AgentResponse) -> None:
             # Update thread with conversation_id derived from streaming raw updates.
             # Using response_id here can break function-call continuation for APIs
             # where response IDs are not valid conversation handles.

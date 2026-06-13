@@ -10,6 +10,7 @@ import typing
 from collections.abc import Awaitable, Callable
 from typing import Any, TypeVar, overload
 
+from .._nvtx import range_push as nvtx_range
 from ..observability import create_processing_span
 from ._events import (
     WorkflowErrorDetails,
@@ -242,13 +243,16 @@ class Executor(RequestInfoMixin, DictConvertible):
             An awaitable that resolves to the result of the execution.
         """
         # Create processing span for tracing (gracefully handles disabled tracing)
-        with create_processing_span(
-            self.id,
-            self.__class__.__name__,
-            str(MessageType.STANDARD if not isinstance(message, WorkflowMessage) else message.type),
-            type(message).__name__,
-            source_trace_contexts=trace_contexts,
-            source_span_ids=source_span_ids,
+        with (
+            nvtx_range(f"maf.workflow.executor:{self.id}:{self.__class__.__name__}:{type(message).__name__}"),
+            create_processing_span(
+                self.id,
+                self.__class__.__name__,
+                str(MessageType.STANDARD if not isinstance(message, WorkflowMessage) else message.type),
+                type(message).__name__,
+                source_trace_contexts=trace_contexts,
+                source_span_ids=source_span_ids,
+            ),
         ):
             # Find the handler and handler spec that matches the message type.
             handler = self._find_handler(message)

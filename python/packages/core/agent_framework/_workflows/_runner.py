@@ -7,6 +7,7 @@ from collections import defaultdict
 from collections.abc import AsyncGenerator, Sequence
 from typing import Any
 
+from .._nvtx import range_push as nvtx_range
 from ..exceptions import (
     WorkflowCheckpointException,
     WorkflowConvergenceException,
@@ -83,77 +84,82 @@ class Runner:
         self._running = True
         previous_checkpoint_id: CheckpointID | None = None
         try:
-            # Emit any events already produced prior to entering loop
-            if await self._ctx.has_events():
-                logger.info("Yielding pre-loop events")
-                for event in await self._ctx.drain_events():
-                    yield event
-
-            # Create the first checkpoint. Checkpoints are usually considered to be created at the end of an iteration,
-            # we can think of the first checkpoint as being created at the end of a "superstep 0" which captures the
-            # states after which the start executor has run.  Note that we execute the start executor outside of the
-            # main iteration loop.
-            if await self._ctx.has_messages() and not self._resumed_from_checkpoint:
-                previous_checkpoint_id = await self._create_checkpoint_if_enabled(previous_checkpoint_id)
-
-            while self._iteration < self._max_iterations:
-                logger.info(f"Starting superstep {self._iteration + 1}")
-                yield WorkflowEvent.superstep_started(iteration=self._iteration + 1)
-
-                # Run iteration concurrently with live event streaming: we poll
-                # for new events while the iteration coroutine progresses.
-                iteration_task = asyncio.create_task(self._run_iteration())
-                try:
-                    while not iteration_task.done():
-                        try:
-                            # Wait briefly for any new event; timeout allows progress checks
-                            event = await asyncio.wait_for(self._ctx.next_event(), timeout=0.05)
-                            yield event
-                        except asyncio.TimeoutError:
-                            # Periodically continue to let iteration advance
-                            continue
-                except asyncio.CancelledError:
-                    # Propagate cancellation to the iteration task to avoid orphaned work
-                    iteration_task.cancel()
-                    with contextlib.suppress(asyncio.CancelledError):
-                        await iteration_task
-                    raise
-
-                # Propagate errors from iteration, but first surface any pending events
-                try:
-                    await iteration_task
-                except Exception:
-                    # Make sure failure-related events (like ExecutorFailedEvent) are surfaced
-                    if await self._ctx.has_events():
-                        for event in await self._ctx.drain_events():
-                            yield event
-                    raise
-                self._iteration += 1
-
-                # Drain any straggler events emitted at tail end
+            with nvtx_range(f"maf.workflow.run:{self._workflow_name}"):
+                # Emit any events already produced prior to entering loop
                 if await self._ctx.has_events():
+                    logger.info("Yielding pre-loop events")
                     for event in await self._ctx.drain_events():
                         yield event
 
-                logger.info(f"Completed superstep {self._iteration}")
+                # Create the first checkpoint. Checkpoints are usually considered to be created at the end of an
+                # iteration.
+                # we can think of the first checkpoint as being created at the end of a "superstep 0" which captures the
+                # states after which the start executor has run.  Note that we execute the start executor outside of the
+                # main iteration loop.
+                if await self._ctx.has_messages() and not self._resumed_from_checkpoint:
+                    previous_checkpoint_id = await self._create_checkpoint_if_enabled(previous_checkpoint_id)
 
-                # Commit pending state changes at superstep boundary
-                self._state.commit()
+                while self._iteration < self._max_iterations:
+                    with nvtx_range(f"maf.workflow.superstep:{self._workflow_name}:{self._iteration + 1}"):
+                        logger.info(f"Starting superstep {self._iteration + 1}")
+                        yield WorkflowEvent.superstep_started(iteration=self._iteration + 1)
 
-                # Create checkpoint after each superstep iteration
-                previous_checkpoint_id = await self._create_checkpoint_if_enabled(previous_checkpoint_id)
+                        # Run iteration concurrently with live event streaming: we poll
+                        # for new events while the iteration coroutine progresses.
+                        iteration_task = asyncio.create_task(self._run_iteration())
+                        try:
+                            while not iteration_task.done():
+                                try:
+                                    # Wait briefly for any new event; timeout allows progress checks
+                                    event = await asyncio.wait_for(self._ctx.next_event(), timeout=0.05)
+                                    yield event
+                                except asyncio.TimeoutError:
+                                    # Periodically continue to let iteration advance
+                                    continue
+                        except asyncio.CancelledError:
+                            # Propagate cancellation to the iteration task to avoid orphaned work
+                            iteration_task.cancel()
+                            with contextlib.suppress(asyncio.CancelledError):
+                                await iteration_task
+                            raise
 
-                yield WorkflowEvent.superstep_completed(iteration=self._iteration)
+                        # Propagate errors from iteration, but first surface any pending events
+                        try:
+                            await iteration_task
+                        except Exception:
+                            # Make sure failure-related events (like ExecutorFailedEvent) are surfaced
+                            if await self._ctx.has_events():
+                                for event in await self._ctx.drain_events():
+                                    yield event
+                            raise
+                        self._iteration += 1
 
-                # Check for convergence: no more messages to process
-                if not await self._ctx.has_messages():
-                    break
+                        # Drain any straggler events emitted at tail end
+                        if await self._ctx.has_events():
+                            for event in await self._ctx.drain_events():
+                                yield event
 
-            if self._iteration >= self._max_iterations and await self._ctx.has_messages():
-                raise WorkflowConvergenceException(f"Runner did not converge after {self._max_iterations} iterations.")
+                        logger.info(f"Completed superstep {self._iteration}")
 
-            logger.info(f"Workflow completed after {self._iteration} supersteps")
-            self._resumed_from_checkpoint = False  # Reset resume flag for next run
+                        # Commit pending state changes at superstep boundary
+                        self._state.commit()
+
+                        # Create checkpoint after each superstep iteration
+                        previous_checkpoint_id = await self._create_checkpoint_if_enabled(previous_checkpoint_id)
+
+                        yield WorkflowEvent.superstep_completed(iteration=self._iteration)
+
+                    # Check for convergence: no more messages to process
+                    if not await self._ctx.has_messages():
+                        break
+
+                if self._iteration >= self._max_iterations and await self._ctx.has_messages():
+                    raise WorkflowConvergenceException(
+                        f"Runner did not converge after {self._max_iterations} iterations."
+                    )
+
+                logger.info(f"Workflow completed after {self._iteration} supersteps")
+                self._resumed_from_checkpoint = False  # Reset resume flag for next run
         finally:
             self._running = False
 
@@ -178,29 +184,35 @@ class Runner:
           in the order they were sent. This is because all messages go through the same edge runner instance
           which preserves message order.
         """
+        with nvtx_range(f"maf.workflow.run_iteration:{self._workflow_name}:{self._iteration + 1}"):
+            await self._run_iteration_core()
+
+    async def _run_iteration_core(self) -> None:
+        """Run the current iteration after the outer NVTX range is established."""
 
         async def _deliver_messages(source_executor_id: str, source_messages: list[WorkflowMessage]) -> None:
             """Outer loop to concurrently deliver messages from all sources to their targets."""
+            with nvtx_range(f"maf.workflow.deliver:{source_executor_id}"):
 
-            async def _deliver_message_inner(edge_runner: EdgeRunner, message: WorkflowMessage) -> bool:
-                """Inner loop to deliver a single message through an edge runner."""
-                return await edge_runner.send_message(message, self._state, self._ctx)
+                async def _deliver_message_inner(edge_runner: EdgeRunner, message: WorkflowMessage) -> bool:
+                    """Inner loop to deliver a single message through an edge runner."""
+                    return await edge_runner.send_message(message, self._state, self._ctx)
 
-            async def _deliver_messages_for_edge_runner(edge_runner: EdgeRunner) -> None:
-                # Preserve message order per edge runner (and therefore per routed target path)
-                # while still allowing parallelism across different edge runners.
-                for message in source_messages:
-                    await _deliver_message_inner(edge_runner, message)
+                async def _deliver_messages_for_edge_runner(edge_runner: EdgeRunner) -> None:
+                    # Preserve message order per edge runner (and therefore per routed target path)
+                    # while still allowing parallelism across different edge runners.
+                    for message in source_messages:
+                        await _deliver_message_inner(edge_runner, message)
 
-            # Route all messages through normal workflow edges
-            associated_edge_runners = self._edge_runner_map.get(source_executor_id, [])
-            if not associated_edge_runners:
-                # This is expected for terminal nodes (e.g., EndWorkflow, last action in workflow)
-                logger.debug(f"No outgoing edges found for executor {source_executor_id}; dropping messages.")
-                return
+                # Route all messages through normal workflow edges
+                associated_edge_runners = self._edge_runner_map.get(source_executor_id, [])
+                if not associated_edge_runners:
+                    # This is expected for terminal nodes (e.g., EndWorkflow, last action in workflow)
+                    logger.debug(f"No outgoing edges found for executor {source_executor_id}; dropping messages.")
+                    return
 
-            tasks = [_deliver_messages_for_edge_runner(edge_runner) for edge_runner in associated_edge_runners]
-            await asyncio.gather(*tasks)
+                tasks = [_deliver_messages_for_edge_runner(edge_runner) for edge_runner in associated_edge_runners]
+                await asyncio.gather(*tasks)
 
         message_batches = await self._ctx.drain_messages()
         tasks = [
@@ -215,21 +227,22 @@ class Runner:
             return None
 
         try:
-            # Save executor states into the shared state before creating the checkpoint,
-            # so that they are included in the checkpoint payload.
-            await self._save_executor_states()
-            # `on_checkpoint_save()` writes via State.set(), which stages values in the
-            # pending buffer. Checkpoints serialize committed state only, so commit here
-            # to ensure executor snapshots are captured in this checkpoint.
-            self._state.commit()
+            with nvtx_range(f"maf.workflow.checkpoint:{self._workflow_name}:{self._iteration}"):
+                # Save executor states into the shared state before creating the checkpoint,
+                # so that they are included in the checkpoint payload.
+                await self._save_executor_states()
+                # `on_checkpoint_save()` writes via State.set(), which stages values in the
+                # pending buffer. Checkpoints serialize committed state only, so commit here
+                # to ensure executor snapshots are captured in this checkpoint.
+                self._state.commit()
 
-            checkpoint_id = await self._ctx.create_checkpoint(
-                self._workflow_name,
-                self._graph_signature_hash,
-                self._state,
-                previous_checkpoint_id,
-                self._iteration,
-            )
+                checkpoint_id = await self._ctx.create_checkpoint(
+                    self._workflow_name,
+                    self._graph_signature_hash,
+                    self._state,
+                    previous_checkpoint_id,
+                    self._iteration,
+                )
 
             logger.info(f"Created checkpoint: {checkpoint_id}")
             return checkpoint_id
@@ -256,41 +269,42 @@ class Runner:
             WorkflowCheckpointException on failure.
         """
         try:
-            # Load the checkpoint
-            checkpoint: WorkflowCheckpoint | None
-            if self._ctx.has_checkpointing():
-                checkpoint = await self._ctx.load_checkpoint(checkpoint_id)
-            elif checkpoint_storage is not None:
-                checkpoint = await checkpoint_storage.load(checkpoint_id)
-            else:
-                raise WorkflowCheckpointException(
-                    "Cannot load checkpoint: no checkpointing configured in context or external storage provided."
-                )
+            with nvtx_range(f"maf.workflow.restore_checkpoint:{self._workflow_name}"):
+                # Load the checkpoint
+                checkpoint: WorkflowCheckpoint | None
+                if self._ctx.has_checkpointing():
+                    checkpoint = await self._ctx.load_checkpoint(checkpoint_id)
+                elif checkpoint_storage is not None:
+                    checkpoint = await checkpoint_storage.load(checkpoint_id)
+                else:
+                    raise WorkflowCheckpointException(
+                        "Cannot load checkpoint: no checkpointing configured in context or external storage provided."
+                    )
 
-            if not checkpoint:
-                logger.error(f"Checkpoint {checkpoint_id} not found")
-                raise WorkflowCheckpointException(f"Checkpoint {checkpoint_id} not found")
+                if not checkpoint:
+                    logger.error(f"Checkpoint {checkpoint_id} not found")
+                    raise WorkflowCheckpointException(f"Checkpoint {checkpoint_id} not found")
 
-            # Validate the loaded checkpoint against the workflow
-            if self._graph_signature_hash != checkpoint.graph_signature_hash:
-                raise WorkflowCheckpointException(
-                    "Workflow graph has changed since the checkpoint was created. "
-                    "Please rebuild the original workflow before resuming."
-                )
+                # Validate the loaded checkpoint against the workflow
+                if self._graph_signature_hash != checkpoint.graph_signature_hash:
+                    raise WorkflowCheckpointException(
+                        "Workflow graph has changed since the checkpoint was created. "
+                        "Please rebuild the original workflow before resuming."
+                    )
 
-            # Restore state. Clear first so import_state (which merges) does
-            # not leak stale keys from a prior run on this Workflow instance.
-            # This matters more now that Workflow.run() no longer wipes state
-            # per call - the only reset point for shared state on a reused
-            # instance is at restore time.
-            self._state.clear()
-            self._state.import_state(checkpoint.state)
-            # Restore executor states using the restored state
-            await self._restore_executor_states()
-            # Apply the checkpoint to the context
-            await self._ctx.apply_checkpoint(checkpoint)
-            # Mark the runner as resumed
-            self._mark_resumed(checkpoint.iteration_count)
+                # Restore state. Clear first so import_state (which merges) does
+                # not leak stale keys from a prior run on this Workflow instance.
+                # This matters more now that Workflow.run() no longer wipes state
+                # per call - the only reset point for shared state on a reused
+                # instance is at restore time.
+                self._state.clear()
+                self._state.import_state(checkpoint.state)
+                # Restore executor states using the restored state
+                await self._restore_executor_states()
+                # Apply the checkpoint to the context
+                await self._ctx.apply_checkpoint(checkpoint)
+                # Mark the runner as resumed
+                self._mark_resumed(checkpoint.iteration_count)
 
             logger.info(f"Successfully restored workflow from checkpoint: {checkpoint_id}")
         except WorkflowCheckpointException:
