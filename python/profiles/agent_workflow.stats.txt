@@ -1,0 +1,84 @@
+Generating SQLite file profiles/agent_workflow.sqlite from profiles/agent_workflow.nsys-rep
+Processing [profiles/agent_workflow.sqlite] with [/opt/nvidia/hpc_sdk/Linux_x86_64/25.5/profilers/Nsight_Systems/host-linux-x64/reports/nvtx_sum.py]... 
+
+ ** NVTX Range Summary (nvtx_sum):
+
+ Time (%)  Total Time (ns)  Instances      Avg (ns)          Med (ns)         Min (ns)        Max (ns)      StdDev (ns)    Style                                         Range                                       
+ --------  ---------------  ---------  ----------------  ----------------  --------------  --------------  -------------  -------  ----------------------------------------------------------------------------------
+     12.0   69,447,502,185          1  69,447,502,185.0  69,447,502,185.0  69,447,502,185  69,447,502,185            0.0  PushPop  :af_suite.scenario:agent_workflow                                                 
+     11.9   68,836,940,143      2,531      27,197,526.7      14,061,550.0           5,791   7,223,298,118  154,649,177.9  PushPop  :maf.function_loop.chat_streaming.pull:1                                          
+     10.0   58,019,122,569          1  58,019,122,569.0  58,019,122,569.0  58,019,122,569  58,019,122,569            0.0  PushPop  :maf.workflow.run:WorkflowBuilder-b555f825-e13a-4a55-a985-7ddffbae6607            
+      9.8   56,992,698,532          1  56,992,698,532.0  56,992,698,532.0  56,992,698,532  56,992,698,532            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-b555f825-e13a-4a55-a985-7ddffbae6607:2    
+      9.8   56,942,180,083          1  56,942,180,083.0  56,942,180,083.0  56,942,180,083  56,942,180,083            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-b555f825-e13a-4a55-a985-7ddffbae6607:2
+      9.8   56,942,044,331          1  56,942,044,331.0  56,942,044,331.0  56,942,044,331  56,942,044,331            0.0  PushPop  :maf.workflow.deliver:reviewer                                                    
+      9.8   56,941,722,318          1  56,941,722,318.0  56,941,722,318.0  56,941,722,318  56,941,722,318            0.0  PushPop  :maf.workflow.executor:planner:AgentExecutor:WorkflowMessage                      
+      9.8   56,696,253,443      2,148      26,394,903.8      15,295,594.5         142,906     752,121,898   58,416,798.4  PushPop  :maf.agent.run_streaming.pull:planner                                             
+      9.8   56,663,927,373      2,148      26,379,854.5      15,277,659.5         137,406     752,106,266   58,417,116.1  PushPop  :maf.chat.get_streaming_response.pull:planner                                     
+      2.0   11,364,704,624          1  11,364,704,624.0  11,364,704,624.0  11,364,704,624  11,364,704,624            0.0  PushPop  :maf.workflow.executor:writer:AgentExecutor:str                                   
+      2.0   11,327,971,347        378      29,968,178.2       3,143,832.5         160,270   7,223,665,778  372,753,944.0  PushPop  :maf.agent.run_streaming.pull:writer                                              
+      2.0   11,323,043,770        378      29,955,142.2       3,133,267.0         154,518   7,223,651,370  372,753,937.2  PushPop  :maf.chat.get_streaming_response.pull:writer                                      
+      0.5    2,651,924,525     41,260          64,273.5          11,261.0             210     103,400,734      606,300.1  PushPop  GIL Trace:Holding GIL                                                             
+      0.2      973,831,893          1     973,831,893.0     973,831,893.0     973,831,893     973,831,893            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-b555f825-e13a-4a55-a985-7ddffbae6607:1    
+      0.2      923,233,579          1     923,233,579.0     923,233,579.0     923,233,579     923,233,579            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-b555f825-e13a-4a55-a985-7ddffbae6607:1
+      0.2      923,075,744          1     923,075,744.0     923,075,744.0     923,075,744     923,075,744            0.0  PushPop  :maf.workflow.deliver:writer                                                      
+      0.2      922,731,459          1     922,731,459.0     922,731,459.0     922,731,459     922,731,459            0.0  PushPop  :maf.workflow.executor:reviewer:AgentExecutor:WorkflowMessage                     
+      0.2      921,652,154          2     460,826,077.0     460,826,077.0       1,257,248     920,394,906  649,928,470.8  PushPop  :maf.agent.run_streaming.pull:reviewer                                            
+      0.2      921,609,884          2     460,804,942.0     460,804,942.0       1,230,868     920,379,016  649,935,888.4  PushPop  :maf.chat.get_streaming_response.pull:reviewer                                    
+      0.0       50,296,270          1      50,296,270.0      50,296,270.0      50,296,270      50,296,270            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-b555f825-e13a-4a55-a985-7ddffbae6607:3    
+      0.0        1,146,775         12          95,564.6          38,414.5          15,009         303,807      107,609.6  PushPop  GIL Trace:Waiting for GIL                                                         
+      0.0          523,923          1         523,923.0         523,923.0         523,923         523,923            0.0  PushPop  :maf.agent.after_run:planner                                                      
+      0.0          251,896          1         251,896.0         251,896.0         251,896         251,896            0.0  PushPop  :maf.agent.after_run:writer                                                       
+      0.0          226,347          1         226,347.0         226,347.0         226,347         226,347            0.0  PushPop  :maf.agent.run_streaming:reviewer                                                 
+      0.0          137,054          1         137,054.0         137,054.0         137,054         137,054            0.0  PushPop  :maf.agent.prepare:reviewer                                                       
+      0.0          132,856          1         132,856.0         132,856.0         132,856         132,856            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-b555f825-e13a-4a55-a985-7ddffbae6607:3
+      0.0          105,003          1         105,003.0         105,003.0         105,003         105,003            0.0  PushPop  :maf.agent.run_streaming:writer                                                   
+      0.0           81,818          1          81,818.0          81,818.0          81,818          81,818            0.0  PushPop  :maf.agent.run_streaming:planner                                                  
+      0.0           57,580          3          19,193.3          10,090.0           8,826          38,664       16,873.9  PushPop  :maf.function_loop.pre_tools_streaming:1                                          
+      0.0           55,026          1          55,026.0          55,026.0          55,026          55,026            0.0  PushPop  :maf.agent.prepare:writer                                                         
+      0.0           45,558          1          45,558.0          45,558.0          45,558          45,558            0.0  PushPop  :maf.workflow.deliver:planner                                                     
+      0.0           43,574          1          43,574.0          43,574.0          43,574          43,574            0.0  PushPop  :maf.agent.prepare:planner                                                        
+      0.0           15,790          1          15,790.0          15,790.0          15,790          15,790            0.0  PushPop  :maf.agent.after_run:reviewer                                                     
+      0.0            5,500          3           1,833.3           1,843.0           1,774           1,883           55.1  PushPop  :maf.function_loop.chat_streaming.finalize:1                                      
+
+Processing [profiles/agent_workflow.sqlite] with [/opt/nvidia/hpc_sdk/Linux_x86_64/25.5/profilers/Nsight_Systems/host-linux-x64/reports/osrt_sum.py]... 
+
+ ** OS Runtime Summary (osrt_sum):
+
+ Time (%)  Total Time (ns)  Num Calls     Avg (ns)       Med (ns)    Min (ns)      Max (ns)       StdDev (ns)            Name        
+ --------  ---------------  ---------  ---------------  -----------  ---------  --------------  ----------------  -------------------
+     50.5   69,050,127,514         10  6,905,012,751.4  1,134,837.0    216,368  57,045,706,961  17,949,900,037.2  sem_wait           
+     49.1   67,190,482,085      6,642     10,116,001.5      2,145.0      1,001   1,160,384,049      28,518,650.0  epoll_wait         
+      0.1      184,395,153      1,370        134,595.0    142,149.5      5,080         845,413          43,121.0  open64             
+      0.1      112,055,740      1,307         85,735.1     86,347.0      1,523         249,442          20,260.8  close              
+      0.1       93,531,888      2,596         36,029.2     17,443.5      1,062      46,692,349         916,136.4  read               
+      0.0       25,642,779      2,473         10,369.1      9,789.0      1,253          35,969           4,444.3  recv               
+      0.0       17,045,031      4,890          3,485.7      3,426.0      1,152          28,475           1,334.7  epoll_ctl          
+      0.0       12,894,173      1,423          9,061.3      5,431.0      4,298       1,351,551          52,222.4  munmap             
+      0.0        7,410,690      1,459          5,079.3      3,687.0      3,196         594,949          15,612.4  mmap64             
+      0.0        7,115,534      1,723          4,129.7      3,647.0      1,002          18,996           2,200.5  write              
+      0.0        2,414,995          1      2,414,995.0  2,414,995.0  2,414,995       2,414,995               0.0  waitpid            
+      0.0          804,404        110          7,312.8      4,769.0      3,687          53,874           7,861.5  fgets              
+      0.0          798,802          3        266,267.3    231,547.0    193,193         374,062          95,302.3  pthread_create     
+      0.0          541,403         10         54,140.3     15,559.5      8,646         151,232          66,761.1  fopen64            
+      0.0          435,972          3        145,324.0    134,529.0     75,126         226,317          76,171.4  poll               
+      0.0          317,482         53          5,990.2      3,276.0      1,643          32,813           5,865.4  send               
+      0.0          235,195         36          6,533.2      2,044.0      1,022          34,246           9,042.8  pthread_cond_signal
+      0.0          215,878          7         30,839.7      5,902.0      2,294          99,062          45,011.5  fclose             
+      0.0          160,482          7         22,926.0     17,274.0      9,018          50,247          14,657.9  connect            
+      0.0           87,849          5         17,569.8     21,131.0      1,703          27,693           9,874.8  pthread_mutex_lock 
+      0.0           79,073          7         11,296.1     11,833.0      5,731          15,911           3,900.2  socket             
+      0.0           44,045          5          8,809.0      8,576.0      1,763          18,195           6,017.6  shutdown           
+      0.0           29,166          3          9,722.0      9,849.0      4,829          14,488           4,830.8  stat               
+      0.0           20,900          2         10,450.0     10,450.0      6,242          14,658           5,951.0  pipe2              
+      0.0           16,301          1         16,301.0     16,301.0     16,301          16,301               0.0  socketpair         
+      0.0           14,635         10          1,463.5      1,217.0      1,031           2,304             501.3  ioctl              
+      0.0           13,356          1         13,356.0     13,356.0     13,356          13,356               0.0  fread              
+      0.0           13,136          3          4,378.7      3,968.0      3,838           5,330             826.4  writev             
+      0.0            7,465          4          1,866.3      1,553.0      1,353           3,006             781.2  sigaction          
+      0.0            4,699          1          4,699.0      4,699.0      4,699           4,699               0.0  fputs_unlocked     
+      0.0            3,757          3          1,252.3      1,122.0      1,082           1,553             261.2  fcntl              
+      0.0            3,437          1          3,437.0      3,437.0      3,437           3,437               0.0  getc               
+      0.0            2,584          2          1,292.0      1,292.0      1,222           1,362              99.0  fcntl64            
+      0.0            1,624          1          1,624.0      1,624.0      1,624           1,624               0.0  getentropy         
+      0.0            1,372          1          1,372.0      1,372.0      1,372           1,372               0.0  dup2               
+

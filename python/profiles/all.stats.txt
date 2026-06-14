@@ -1,0 +1,133 @@
+Generating SQLite file profiles/all.sqlite from profiles/all.nsys-rep
+Processing [profiles/all.sqlite] with [/opt/nvidia/hpc_sdk/Linux_x86_64/25.5/profilers/Nsight_Systems/host-linux-x64/reports/nvtx_sum.py]... 
+
+ ** NVTX Range Summary (nvtx_sum):
+
+ Time (%)  Total Time (ns)  Instances      Avg (ns)          Med (ns)         Min (ns)        Max (ns)      StdDev (ns)    Style                                         Range                                       
+ --------  ---------------  ---------  ----------------  ----------------  --------------  --------------  -------------  -------  ----------------------------------------------------------------------------------
+     10.0   13,957,516,768        895      15,594,990.8       2,300,393.0           4,699   2,665,546,862  124,813,774.7  PushPop  :maf.function_loop.chat_streaming.pull:1                                          
+      9.5   13,276,924,077          1  13,276,924,077.0  13,276,924,077.0  13,276,924,077  13,276,924,077            0.0  PushPop  :af_suite.scenario:tools                                                          
+      9.5   13,266,223,298          1  13,266,223,298.0  13,266,223,298.0  13,266,223,298  13,266,223,298            0.0  PushPop  :maf.agent.run:tool_stress                                                        
+      9.5   13,266,093,217          1  13,266,093,217.0  13,266,093,217.0  13,266,093,217  13,266,093,217            0.0  PushPop  :maf.chat.get_response:tool_stress                                                
+      5.7    7,903,320,314          1   7,903,320,314.0   7,903,320,314.0   7,903,320,314   7,903,320,314            0.0  PushPop  :af_suite.scenario:agent_workflow                                                 
+      5.1    7,106,870,722          2   3,553,435,361.0   3,553,435,361.0   3,170,560,043   3,936,310,679  541,467,467.4  PushPop  :maf.function_loop.chat:1                                                         
+      4.9    6,811,511,235          1   6,811,511,235.0   6,811,511,235.0   6,811,511,235   6,811,511,235            0.0  PushPop  :maf.workflow.executor:writer:AgentExecutor:str                                   
+      4.8    6,778,297,859        314      21,586,935.9       2,742,983.5         146,563   2,174,764,888  138,623,345.8  PushPop  :maf.agent.run_streaming.pull:writer                                              
+      4.8    6,773,960,955        314      21,573,124.1       2,727,944.5         141,103   2,174,753,416  138,623,771.1  PushPop  :maf.chat.get_streaming_response.pull:writer                                      
+      4.5    6,336,875,959          1   6,336,875,959.0   6,336,875,959.0   6,336,875,959   6,336,875,959            0.0  PushPop  :af_suite.scenario:streaming                                                      
+      4.5    6,299,501,243        573      10,993,894.0       1,950,968.0         136,474   2,665,917,467  114,087,553.3  PushPop  :maf.agent.run_streaming.pull:streamer                                            
+      4.5    6,292,140,709        573      10,981,048.4       1,940,117.0         130,523   2,665,903,140  114,087,577.4  PushPop  :maf.chat.get_streaming_response.pull:streamer                                    
+      4.0    5,577,383,752          1   5,577,383,752.0   5,577,383,752.0   5,577,383,752   5,577,383,752            0.0  PushPop  :maf.function_loop.chat:4                                                         
+      2.8    3,982,412,356          1   3,982,412,356.0   3,982,412,356.0   3,982,412,356   3,982,412,356            0.0  PushPop  :af_suite.scenario:baseline                                                       
+      2.8    3,936,835,633          1   3,936,835,633.0   3,936,835,633.0   3,936,835,633   3,936,835,633            0.0  PushPop  :maf.agent.run:baseline                                                           
+      2.8    3,936,558,558          1   3,936,558,558.0   3,936,558,558.0   3,936,558,558   3,936,558,558            0.0  PushPop  :maf.chat.get_response:baseline                                                   
+      1.7    2,446,148,396          1   2,446,148,396.0   2,446,148,396.0   2,446,148,396   2,446,148,396            0.0  PushPop  :maf.function_loop.chat:2                                                         
+      1.2    1,618,842,314          1   1,618,842,314.0   1,618,842,314.0   1,618,842,314   1,618,842,314            0.0  PushPop  :maf.function_loop.chat:3                                                         
+      1.1    1,541,189,955     26,514          58,127.4           5,410.0             200     132,754,109    1,073,554.3  PushPop  GIL Trace:Holding GIL                                                             
+      0.8    1,070,509,147          1   1,070,509,147.0   1,070,509,147.0   1,070,509,147   1,070,509,147            0.0  PushPop  :maf.workflow.run:WorkflowBuilder-e953a43e-d709-4292-8083-18c30e116f15            
+      0.5      677,652,310          1     677,652,310.0     677,652,310.0     677,652,310     677,652,310            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-e953a43e-d709-4292-8083-18c30e116f15:2    
+      0.4      627,076,802          1     627,076,802.0     627,076,802.0     627,076,802     627,076,802            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-e953a43e-d709-4292-8083-18c30e116f15:2
+      0.4      626,970,237          1     626,970,237.0     626,970,237.0     626,970,237     626,970,237            0.0  PushPop  :maf.workflow.deliver:reviewer                                                    
+      0.4      626,716,135          1     626,716,135.0     626,716,135.0     626,716,135     626,716,135            0.0  PushPop  :maf.workflow.executor:planner:AgentExecutor:WorkflowMessage                      
+      0.4      625,752,513          2     312,876,256.5     312,876,256.5       1,441,233     624,311,280  440,435,634.0  PushPop  :maf.agent.run_streaming.pull:planner                                             
+      0.4      625,711,905          2     312,855,952.5     312,855,952.5       1,418,490     624,293,415  440,439,083.3  PushPop  :maf.chat.get_streaming_response.pull:planner                                     
+      0.2      340,651,181          1     340,651,181.0     340,651,181.0     340,651,181     340,651,181            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-e953a43e-d709-4292-8083-18c30e116f15:1    
+      0.2      290,155,977          1     290,155,977.0     290,155,977.0     290,155,977     290,155,977            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-e953a43e-d709-4292-8083-18c30e116f15:1
+      0.2      290,036,035          1     290,036,035.0     290,036,035.0     290,036,035     290,036,035            0.0  PushPop  :maf.workflow.deliver:writer                                                      
+      0.2      289,843,604          1     289,843,604.0     289,843,604.0     289,843,604     289,843,604            0.0  PushPop  :maf.workflow.executor:reviewer:AgentExecutor:WorkflowMessage                     
+      0.2      289,277,721          2     144,638,860.5     144,638,860.5         337,442     288,940,279  204,073,023.1  PushPop  :maf.agent.run_streaming.pull:reviewer                                            
+      0.2      289,246,681          2     144,623,340.5     144,623,340.5         316,712     288,929,969  204,080,391.2  PushPop  :maf.chat.get_streaming_response.pull:reviewer                                    
+      0.2      235,308,257          1     235,308,257.0     235,308,257.0     235,308,257     235,308,257            0.0  PushPop  :af_suite.scenario:local_fanout                                                   
+      0.2      234,115,313          1     234,115,313.0     234,115,313.0     234,115,313     234,115,313            0.0  PushPop  :maf.workflow.run:WorkflowBuilder-dff7cd54-51c2-478a-a09f-63db04470578            
+      0.1      200,861,281          1     200,861,281.0     200,861,281.0     200,861,281     200,861,281            0.0  PushPop  :maf.function_loop.process_tools:2                                                
+      0.1      200,542,645          1     200,542,645.0     200,542,645.0     200,542,645     200,542,645            0.0  PushPop  :maf.tool.invoke:search_runtime_notes                                             
+      0.1      183,418,911          1     183,418,911.0     183,418,911.0     183,418,911     183,418,911            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-dff7cd54-51c2-478a-a09f-63db04470578:1    
+      0.1      151,168,768          2      75,584,384.0      75,584,384.0          35,058     151,133,710  106,842,881.5  PushPop  :maf.function_loop.process_tools:1                                                
+      0.1      150,540,565          1     150,540,565.0     150,540,565.0     150,540,565     150,540,565            0.0  PushPop  :maf.tool.invoke:lookup_ticket                                                    
+      0.1      132,981,258          1     132,981,258.0     132,981,258.0     132,981,258     132,981,258            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-dff7cd54-51c2-478a-a09f-63db04470578:1
+      0.1      132,942,202          1     132,942,202.0     132,942,202.0     132,942,202     132,942,202            0.0  PushPop  :maf.workflow.deliver:dispatch                                                    
+      0.1      100,794,508          1     100,794,508.0     100,794,508.0     100,794,508     100,794,508            0.0  PushPop  :maf.function_loop.process_tools:3                                                
+      0.1      100,507,474          1     100,507,474.0     100,507,474.0     100,507,474     100,507,474            0.0  PushPop  :maf.tool.invoke:estimate_priority                                                
+      0.0       50,650,984          1      50,650,984.0      50,650,984.0      50,650,984      50,650,984            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-dff7cd54-51c2-478a-a09f-63db04470578:2    
+      0.0       50,330,475          1      50,330,475.0      50,330,475.0      50,330,475      50,330,475            0.0  PushPop  :maf.workflow.superstep:WorkflowBuilder-e953a43e-d709-4292-8083-18c30e116f15:3    
+      0.0       33,531,928          1      33,531,928.0      33,531,928.0      33,531,928      33,531,928            0.0  PushPop  :maf.workflow.executor:worker_3:Worker:WorkflowMessage                            
+      0.0       33,362,651          1      33,362,651.0      33,362,651.0      33,362,651      33,362,651            0.0  PushPop  :maf.workflow.executor:worker_1:Worker:WorkflowMessage                            
+      0.0       32,908,905          1      32,908,905.0      32,908,905.0      32,908,905      32,908,905            0.0  PushPop  :maf.workflow.executor:worker_0:Worker:WorkflowMessage                            
+      0.0       32,874,828          1      32,874,828.0      32,874,828.0      32,874,828      32,874,828            0.0  PushPop  :maf.workflow.executor:worker_2:Worker:WorkflowMessage                            
+      0.0        1,749,866         25          69,994.6          29,537.0           3,787         307,644       87,907.6  PushPop  GIL Trace:Waiting for GIL                                                         
+      0.0          450,260          1         450,260.0         450,260.0         450,260         450,260            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-dff7cd54-51c2-478a-a09f-63db04470578:2
+      0.0          393,350          1         393,350.0         393,350.0         393,350         393,350            0.0  PushPop  :maf.workflow.deliver:worker_0                                                    
+      0.0          373,382          1         373,382.0         373,382.0         373,382         373,382            0.0  PushPop  :maf.workflow.deliver:worker_1                                                    
+      0.0          353,784          1         353,784.0         353,784.0         353,784         353,784            0.0  PushPop  :maf.workflow.deliver:worker_2                                                    
+      0.0          334,005          1         334,005.0         334,005.0         334,005         334,005            0.0  PushPop  :maf.workflow.deliver:worker_3                                                    
+      0.0          207,701          1         207,701.0         207,701.0         207,701         207,701            0.0  PushPop  :maf.agent.run_streaming:streamer                                                 
+      0.0          185,128          1         185,128.0         185,128.0         185,128         185,128            0.0  PushPop  :maf.agent.after_run:streamer                                                     
+      0.0          130,121          1         130,121.0         130,121.0         130,121         130,121            0.0  PushPop  :maf.agent.run_streaming:writer                                                   
+      0.0          120,753          1         120,753.0         120,753.0         120,753         120,753            0.0  PushPop  :maf.agent.run_streaming:planner                                                  
+      0.0          120,223          1         120,223.0         120,223.0         120,223         120,223            0.0  PushPop  :maf.agent.prepare:streamer                                                       
+      0.0          107,849          1         107,849.0         107,849.0         107,849         107,849            0.0  PushPop  :maf.agent.after_run:writer                                                       
+      0.0          104,412          1         104,412.0         104,412.0         104,412         104,412            0.0  PushPop  :maf.agent.after_run:baseline                                                     
+      0.0           92,990          1          92,990.0          92,990.0          92,990          92,990            0.0  PushPop  :maf.agent.run_streaming:reviewer                                                 
+      0.0           88,932          1          88,932.0          88,932.0          88,932          88,932            0.0  PushPop  :maf.agent.prepare:writer                                                         
+      0.0           85,275          1          85,275.0          85,275.0          85,275          85,275            0.0  PushPop  :maf.agent.prepare:tool_stress                                                    
+      0.0           71,057          1          71,057.0          71,057.0          71,057          71,057            0.0  PushPop  :maf.workflow.executor:join:Join:WorkflowMessage                                  
+      0.0           68,182          1          68,182.0          68,182.0          68,182          68,182            0.0  PushPop  :maf.workflow.run_iteration:WorkflowBuilder-e953a43e-d709-4292-8083-18c30e116f15:3
+      0.0           66,859          1          66,859.0          66,859.0          66,859          66,859            0.0  PushPop  :maf.workflow.executor:dispatch:Dispatch:str                                      
+      0.0           60,917          1          60,917.0          60,917.0          60,917          60,917            0.0  PushPop  :maf.agent.prepare:planner                                                        
+      0.0           60,516          1          60,516.0          60,516.0          60,516          60,516            0.0  PushPop  :maf.agent.prepare:baseline                                                       
+      0.0           50,349          4          12,587.3          12,725.0           7,475          17,424        5,122.5  PushPop  :maf.function_loop.pre_tools_streaming:1                                          
+      0.0           44,796          1          44,796.0          44,796.0          44,796          44,796            0.0  PushPop  :maf.agent.prepare:reviewer                                                       
+      0.0           19,627          1          19,627.0          19,627.0          19,627          19,627            0.0  PushPop  :maf.function_loop.pre_tools:4                                                    
+      0.0           17,523          1          17,523.0          17,523.0          17,523          17,523            0.0  PushPop  :maf.function_loop.pre_tools:3                                                    
+      0.0           17,113          1          17,113.0          17,113.0          17,113          17,113            0.0  PushPop  :maf.agent.after_run:tool_stress                                                  
+      0.0           16,623          2           8,311.5           8,311.5           7,375           9,248        1,324.4  PushPop  :maf.function_loop.pre_tools:1                                                    
+      0.0           16,211          1          16,211.0          16,211.0          16,211          16,211            0.0  PushPop  :maf.function_loop.pre_tools:2                                                    
+      0.0           14,768          1          14,768.0          14,768.0          14,768          14,768            0.0  PushPop  :maf.agent.after_run:reviewer                                                     
+      0.0           12,945          1          12,945.0          12,945.0          12,945          12,945            0.0  PushPop  :maf.function_loop.process_tools:4                                                
+      0.0           11,131          1          11,131.0          11,131.0          11,131          11,131            0.0  PushPop  :maf.agent.after_run:planner                                                      
+      0.0            9,598          1           9,598.0           9,598.0           9,598           9,598            0.0  PushPop  :maf.workflow.deliver:planner                                                     
+      0.0            6,774          4           1,693.5           1,653.5           1,392           2,075          335.1  PushPop  :maf.function_loop.chat_streaming.finalize:1                                      
+
+Processing [profiles/all.sqlite] with [/opt/nvidia/hpc_sdk/Linux_x86_64/25.5/profilers/Nsight_Systems/host-linux-x64/reports/osrt_sum.py]... 
+
+ ** OS Runtime Summary (osrt_sum):
+
+ Time (%)  Total Time (ns)  Num Calls     Avg (ns)        Med (ns)      Min (ns)      Max (ns)       StdDev (ns)           Name        
+ --------  ---------------  ---------  ---------------  -------------  -----------  -------------  ---------------  -------------------
+     49.5   30,872,239,906         19  1,624,854,731.9    8,988,702.0       97,388  6,812,779,925  2,359,536,126.9  sem_wait           
+     49.1   30,624,916,608      1,687     18,153,477.5        2,235.0        1,002  1,312,866,039     80,252,438.5  epoll_wait         
+      0.7      450,275,074          3    150,091,691.3  150,091,818.0  100,091,701    200,091,555     49,999,927.0  clock_nanosleep    
+      0.3      180,906,688      1,371        131,952.4      139,680.0        5,140      1,238,031         50,722.5  open64             
+      0.2      111,684,836      1,311         85,190.6       85,836.0        1,674      1,374,655         40,287.5  close              
+      0.1       83,894,605      2,598         32,292.0       17,223.0        1,102     46,050,117        903,204.4  read               
+      0.0       11,009,031      1,414          7,785.7        3,958.0        3,326      2,421,096         69,070.4  munmap             
+      0.0        8,183,530        883          9,267.9        7,955.0        1,232         92,769          5,131.5  recv               
+      0.0        6,321,162      1,450          4,359.4        3,447.0        2,976         19,057          1,962.5  mmap64             
+      0.0        5,267,815      1,684          3,128.2        2,785.0        1,262         22,844          1,531.4  epoll_ctl          
+      0.0        3,145,104        829          3,793.9        3,617.0        1,032         23,235          2,448.4  write              
+      0.0        2,543,653          1      2,543,653.0    2,543,653.0    2,543,653      2,543,653              0.0  waitpid            
+      0.0        1,456,482          3        485,494.0      252,587.0      202,801      1,001,094        447,216.0  pthread_create     
+      0.0        1,404,388        214          6,562.6        4,674.5        3,276         34,156          5,341.6  fgets              
+      0.0          575,613         90          6,395.7        5,380.5        1,554         24,979          5,083.2  send               
+      0.0          433,648         11         39,422.5        2,104.0        1,262        207,681         69,714.4  poll               
+      0.0          351,790         13         27,060.8       18,776.0        8,757        147,154         36,685.5  fopen64            
+      0.0          260,026         47          5,532.5        2,174.0        1,082         30,278          7,064.7  pthread_cond_signal
+      0.0          238,872         10         23,887.2       24,317.5       10,640         48,293         11,363.4  connect            
+      0.0          143,327         10         14,332.7        5,811.5        2,144         97,909         29,408.0  fclose             
+      0.0          111,878         10         11,187.8       11,428.0        5,762         15,770          3,205.4  socket             
+      0.0           90,305          6         15,050.8       17,488.5        1,433         28,385         11,323.7  pthread_mutex_lock 
+      0.0           71,359          7         10,194.1        8,105.0        1,223         23,586          8,513.8  shutdown           
+      0.0           25,129          3          8,376.3        7,996.0        4,459         12,674          4,120.7  stat               
+      0.0           19,686         13          1,514.3        1,232.0        1,022          2,575            489.4  ioctl              
+      0.0           16,872          2          8,436.0        8,436.0        6,222         10,650          3,131.1  pipe2              
+      0.0           15,851          1         15,851.0       15,851.0       15,851         15,851              0.0  socketpair         
+      0.0           13,195          1         13,195.0       13,195.0       13,195         13,195              0.0  fread              
+      0.0           12,023          3          4,007.7        4,168.0        3,677          4,178            286.4  writev             
+      0.0            7,285          4          1,821.3        1,803.5        1,303          2,375            556.6  sigaction          
+      0.0            4,388          1          4,388.0        4,388.0        4,388          4,388              0.0  fputs_unlocked     
+      0.0            3,676          3          1,225.3        1,292.0        1,082          1,302            124.2  fcntl              
+      0.0            3,135          1          3,135.0        3,135.0        3,135          3,135              0.0  getc               
+      0.0            2,084          2          1,042.0        1,042.0        1,002          1,082             56.6  fcntl64            
+      0.0            2,034          1          2,034.0        2,034.0        2,034          2,034              0.0  getentropy         
+      0.0            1,112          1          1,112.0        1,112.0        1,112          1,112              0.0  dup2               
+
